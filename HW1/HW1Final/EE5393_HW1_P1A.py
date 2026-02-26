@@ -2,9 +2,9 @@ import random
 import math
 
 # -------------------- User settings --------------------
-TRIALS = 5000       # increase for better accuracy (runtime increases)
-N_STEPS = 30000     # steps per trial; increase if events seem rare
-SEED = 1            # set None for random seed
+TRIALS = 5000       # Trials
+N_STEPS = 30000     # Steps per trial
+SEED = 1            # Set seed
 # -------------------------------------------------------
 
 # Reaction rate constants
@@ -15,14 +15,12 @@ x1_0, x2_0, x3_0 = 110, 26, 55
 
 
 def choose2(n):
-    """n choose 2 (how many pairs can be chosen from n items)."""
     if n < 2:
         return 0
     return n * (n - 1) / 2.0
 
 
 def one_trial():
-    """Run one stochastic trajectory for N_STEPS reaction firings."""
     x1, x2, x3 = x1_0, x2_0, x3_0
 
     hit_c1 = False
@@ -87,7 +85,6 @@ def main():
         c2_hits += 1 if h2 else 0
         c3_hits += 1 if h3 else 0
 
-    print("EE 5393 HW1 — Problem 1(a) :contentReference[oaicite:1]{index=1}")
     print(f"TRIALS={TRIALS}, N_STEPS={N_STEPS}, SEED={SEED}")
     print(f"Start state S0 = [{x1_0}, {x2_0}, {x3_0}]")
     print()

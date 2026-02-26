@@ -1,22 +1,10 @@
-"""
-EE 5393 HW1 — Problem 1(b) :contentReference[oaicite:1]{index=1}
-Estimate mean and variance of X1, X2, X3 after exactly 7 steps.
-Start state: [9, 8, 7]
-Reactions:
-  R1: 2X1 + X2 -> 4X3   (k1=1)
-  R2: X1 + 2X3 -> 3X2   (k2=2)
-  R3: X2 + X3 -> 2X1    (k3=3)
-
-We interpret "after 7 steps" as after 7 reaction firings (discrete steps).
-"""
-
 import random
 import numpy as np
 
 # -------------------- Settings --------------------
-TRIALS = 200000   # increase for tighter estimates
-STEPS = 7
-SEED = 1          # set None for random seed
+TRIALS = 200000   # Number of trials
+STEPS = 7         # Steps per trial
+SEED = 1          # Seed
 # --------------------------------------------------
 
 k1, k2, k3 = 1.0, 2.0, 3.0

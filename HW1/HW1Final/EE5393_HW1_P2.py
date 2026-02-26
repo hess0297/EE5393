@@ -47,10 +47,6 @@ def nCk(n: int, k: int) -> int:
 
 
 def parse_stoich(side: str) -> Stoich:
-    """
-    Parse a side like: "RNAP 1 PRE 1" -> {"RNAP":1, "PRE":1}
-    Empty string -> {}
-    """
     side = side.strip() # Remove leading and trailing spaces
     if not side: # If line is empty return blank
         return {}
@@ -68,13 +64,6 @@ def parse_stoich(side: str) -> Stoich:
 
 
 def load_reactions(path: Path) -> List[Reaction]:
-    """
-    Each non-empty, non-comment line:
-        reactants : products : rate
-    Example:
-        Cro 2 : Cro2 1 : 0.05
-        cI 1 : : 7.0E-4
-    """
     rxns: List[Reaction] = []
     with path.open("r", encoding="utf-8", errors="replace") as f: # Open path, UTF-8 encoding, replace characters with placeholder
         for raw in f: # Each line in the reaction file is saved under raw, this goes until there is not another line to save (f has been through)
@@ -98,13 +87,6 @@ def load_reactions(path: Path) -> List[Reaction]:
 
 
 def load_initial_counts(path: Path) -> Dict[str, int]:
-    """
-    Accept lines like:
-        P2 100 N
-        RNAP 30 N
-        cI2 0 GE 145
-    We only use the first two tokens: species, integer count.
-    """
     counts: Dict[str, int] = {}
     with path.open("r", encoding="utf-8", errors="replace") as f:
         for raw in f:
@@ -124,10 +106,6 @@ def load_initial_counts(path: Path) -> Dict[str, int]:
 
 
 def propensity(counts: Dict[str, int], reactants: Stoich, rate: float) -> float:
-    """
-    Discrete mass-action propensity:
-        a = rate * Π C(count(sp), stoich(sp))
-    """
     a = rate
     for sp, m in reactants.items():
         n = counts.get(sp, 0)
@@ -139,10 +117,6 @@ def propensity(counts: Dict[str, int], reactants: Stoich, rate: float) -> float:
 
 
 def classify(counts: Dict[str, int]) -> str | None:
-    """
-    Return outcome string if a terminal condition is met, else None.
-    Uses strict ">" thresholds (matches your earlier script).
-    """
     stealth = counts.get("cI2", 0) > STEALTH_THRESHOLD # If dictionary value of cI2 is already greater than STEALTH_THRESHOLD then stealth = 1, otherwise 0
     hijack = counts.get("Cro2", 0) > HIJACK_THRESHOLD # If dictionary value of Cro2 is already greater than HIJACK_THRESHOLD then stealth = 1, otherwise 0
     

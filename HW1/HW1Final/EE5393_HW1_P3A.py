@@ -8,19 +8,19 @@ import math, random, statistics
 # ---- SETTINGS ----
 NUM_RUNS = 100
 BASE_SEED = 100
-PRINT_EVERY = 10  # 0 disables
+PRINT_EVERY = 10 # Print outcomes of every PRINT_EVERY trials for monitoring of the simulation
 T_END = 200000.0
 MAX_STEPS = 10_000_000
 
-# initial counts (no scaling)
+# initial counts
 INIT = {"a": 0, "b": 1, "c": 0, "y": 8192, "yP": 0, "w": 0, "wP": 0, "x": 200, "d": 0, "z": 0}
 
-k = dict(
+k = dict( # Dictionary of reaction rates
     rb=0.02, r1=8.0, r2=12.0, r3=60.0, r4=1.5, r5=0.034,
     r6=0.002, r7=18000.0, r8=0.091, r9=0.3
 )
 
-RXNS = [
+RXNS = [ # Dictionary of reactions
     ("rb", {"b": 1},         {"a": 1, "b": 1},              "rb"),
     ("r1", {"a": 1, "y": 2}, {"c": 1, "yP": 1, "a": 1},     "r1"),
     ("r2", {"c": 2},         {"c": 1},                      "r2"),
@@ -33,7 +33,7 @@ RXNS = [
     ("r9", {"wP": 1},        {"w": 1},                      "r9"),
 ]
 
-def nCk(n, r):
+def nCk(n, r): # Compute binomial coefficient
     if r < 0 or r > n: return 0
     r = min(r, n - r)
     num = den = 1
@@ -42,7 +42,7 @@ def nCk(n, r):
         den *= i
     return num // den
 
-def propensity(c, R, rate):
+def propensity(c, R, rate): # Compute propensity of reaction
     a = rate
     for sp, m in R.items():
         n = c.get(sp, 0)
@@ -50,11 +50,11 @@ def propensity(c, R, rate):
         a *= nCk(n, m)
     return float(a)
 
-def fire(c, R, P):
+def fire(c, R, P): # Perform stoichiometry after a reaction
     for sp, m in R.items(): c[sp] -= m
     for sp, m in P.items(): c[sp] = c.get(sp, 0) + m
 
-def done(c):
+def done(c): # Check weather CRN has reached a terminal state
     return (
         c.get("y", 0) <= 1 and c.get("x", 0) == 0 and c.get("d", 0) == 0 and
         c.get("wP", 0) == 0 and c.get("c", 0) == 0 and c.get("yP", 0) == 0 and
@@ -62,6 +62,26 @@ def done(c):
     )
 
 def ssa(seed, init):
+    """
+    Run one Gillespie SSA trajectory.
+
+    Steps:
+      1. Initialize random seed and copy initial molecule counts.
+      2. Repeatedly:
+         - Check if terminal state is reached (done).
+         - Compute all reaction propensities and total rate a0.
+         - Sample next reaction time Δt ~ Exp(a0).
+         - Select which reaction fires (proportional to its propensity).
+         - Apply stoichiometric update (fire).
+      3. Stop when:
+         - Terminal state reached      → return "done"
+         - No reactions possible       → return "no reactions possible"
+         - Time exceeds T_END          → return "reached T_END"
+         - Step limit reached          → return "reached MAX_STEPS"
+
+    Returns:
+        (final_state_dict, stop_reason)
+    """
     random.seed(seed)
     c = dict(init)
     t = 0.0
