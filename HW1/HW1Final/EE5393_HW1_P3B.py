@@ -154,6 +154,7 @@ def simulate_crn(s, max_steps=2_000_000_000):
 # Run
 # -----------------------------
 if __name__ == "__main__":
+    target_y = species['x']
     final_species, steps = simulate_crn(species)
 
     print(f"Reached target y={target_y} in {steps} steps\n")
