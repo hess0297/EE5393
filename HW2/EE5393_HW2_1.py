@@ -6,8 +6,11 @@ SEED = 1
 MAX_TIME = 1e6
 MAX_STEPS = 100000
 
-# bootstrap + 10 Fibonacci stages = 11 reactions total
 RATES = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05]
+
+K_INIT = 1e-4   # small, but not too small
+
+input_value = 0
 # ------------------------------------------------------
 
 
@@ -39,7 +42,9 @@ def run_fibonacci_ssa():
         random.seed(SEED)
 
     counts = {}
-    counts["S"] = 1
+
+    counts["S"] = input_value  # 0 or 1
+    counts["I"] = 1 - counts["S"]
 
     # recorded Fibonacci species
     for i in range(1, 13):
@@ -52,14 +57,17 @@ def run_fibonacci_ssa():
 
     reactions = []
 
-    # Bootstrap from a single input
+    # -------- One-time fallback --------
+    reactions.append(({"I": 1}, {"S": 1}, K_INIT))
+
+    # -------- Bootstrap --------
     reactions.append((
         {"S": 1},
         {"A1": 1, "B1": 1, "X1": 1, "X2": 1},
         RATES[0]
     ))
 
-    # Stage 1 through stage 9
+    # -------- Fibonacci propagation --------
     for n in range(1, 10):
         reactions.append((
             {f"A{n}": 1},
@@ -72,7 +80,7 @@ def run_fibonacci_ssa():
             RATES[n]
         ))
 
-    # Final stage n = 10 creates X12 only
+    # -------- Final stage --------
     reactions.append((
         {"A10": 1},
         {"X12": 1},
@@ -80,14 +88,14 @@ def run_fibonacci_ssa():
     ))
     reactions.append((
         {"B10": 1},
-        {"X11": 0, "X12": 1},   # X11 already built earlier; keep syntax uniform
+        {"X11": 0, "X12": 1},
         RATES[10]
     ))
 
     t = 0.0
 
     print("=" * 72)
-    print("FIBONACCI SSA (single input, X1 through X12)")
+    print("FIBONACCI SSA (with one-time fallback)")
     print("=" * 72)
     print(f"Initial: S={counts['S']}")
 
@@ -127,10 +135,6 @@ def run_fibonacci_ssa():
             counts[sp] -= m
         for sp, m in products.items():
             counts[sp] = counts.get(sp, 0) + m
-
-        x_state = ", ".join(
-            f"X{i}={counts[f'X{i}']}" for i in range(1, 13) if counts[f"X{i}"] > 0
-        )
 
     print("\nFinal:")
     for i in range(1, 13):
